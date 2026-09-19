@@ -68,23 +68,6 @@ st.markdown("""
     opacity: 0.75;
 }
 
-.metric-label {
-    font-size: 15px;
-    opacity: 0.8;
-}
-
-.big-number {
-    font-size: 34px;
-    font-weight: 750;
-}
-
-.demo-box {
-    padding: 18px;
-    border-radius: 15px;
-    border: 1px solid rgba(128,128,128,0.3);
-    margin-top: 10px;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
@@ -150,13 +133,21 @@ df["Performance_Category"] = df["Final_Score"].apply(
     performance_category
 )
 
-high_count = (df["Performance_Category"] == "High Performer").sum()
-average_count = (df["Performance_Category"] == "Average Performer").sum()
-attention_count = (df["Performance_Category"] == "Needs Attention").sum()
+high_count = (
+    df["Performance_Category"] == "High Performer"
+).sum()
+
+average_count = (
+    df["Performance_Category"] == "Average Performer"
+).sum()
+
+attention_count = (
+    df["Performance_Category"] == "Needs Attention"
+).sum()
 
 
 # =========================================================
-# STUDENT ID SEARCH
+# FIND STUDENT
 # =========================================================
 
 def find_student(student_id):
@@ -191,12 +182,13 @@ with st.sidebar:
 
     st.markdown("### 🧭 Project Pipeline")
 
-   st.write("📥 Academic Data")
-st.write("🧹 Preprocessing")
-st.write("📊 Analytics")
-st.write("🤖 Prediction")
-st.write("🚦 Early Warning")
-st.write("💡 Academic Support")
+    # No arrows — clean pipeline
+    st.write("📥 Academic Data")
+    st.write("🧹 Preprocessing")
+    st.write("📊 Analytics")
+    st.write("🤖 Prediction")
+    st.write("🚦 Early Warning")
+    st.write("💡 Academic Support")
 
     st.divider()
 
@@ -213,7 +205,9 @@ st.write("💡 Academic Support")
 # =========================================================
 
 st.markdown(
-    '<div class="main-title">🎓 Smart Student Performance Analytics</div>',
+    '<div class="main-title">'
+    '🎓 Smart Student Performance Analytics'
+    '</div>',
     unsafe_allow_html=True
 )
 
@@ -239,24 +233,28 @@ st.divider()
 c1, c2, c3, c4 = st.columns(4)
 
 with c1:
+
     st.metric(
         "👨‍🎓 Total Students",
         f"{len(df):,}"
     )
 
 with c2:
+
     st.metric(
         "📊 Average Score",
         f"{df['Final_Score'].mean():.2f}"
     )
 
 with c3:
+
     st.metric(
         "🤖 Model R²",
         f"{r2:.2f}"
     )
 
 with c4:
+
     st.metric(
         "📉 Prediction Error",
         f"{mae:.2f}"
@@ -268,25 +266,30 @@ with c4:
 # =========================================================
 
 st.markdown(
-    '<div class="section-title">📊 Academic Performance Overview</div>',
+    '<div class="section-title">'
+    '📊 Academic Performance Overview'
+    '</div>',
     unsafe_allow_html=True
 )
 
 p1, p2, p3 = st.columns(3)
 
 with p1:
+
     st.success(
         f"🟢 High Performers\n\n"
         f"**{high_count} students**"
     )
 
 with p2:
+
     st.warning(
         f"🟡 Average Performers\n\n"
         f"**{average_count} students**"
     )
 
 with p3:
+
     st.error(
         f"🔴 Needs Attention\n\n"
         f"**{attention_count} students**"
@@ -314,7 +317,9 @@ tab1, tab2, tab3, tab4 = st.tabs(
 with tab1:
 
     st.markdown(
-        '<div class="section-title">🔎 Student Analysis</div>',
+        '<div class="section-title">'
+        '🔎 Student Analysis'
+        '</div>',
         unsafe_allow_html=True
     )
 
@@ -349,13 +354,19 @@ with tab1:
 
         st.session_state["demo_student"] = "S0500"
 
-    if "demo_student" in st.session_state and not search_id:
+        st.rerun()
+
+
+    if (
+        "demo_student" in st.session_state
+        and not search_id
+    ):
 
         search_id = st.session_state["demo_student"]
 
 
     # -----------------------------------------------------
-    # STUDENT SELECTION
+    # FIND STUDENT
     # -----------------------------------------------------
 
     student = None
@@ -364,6 +375,11 @@ with tab1:
 
         student = find_student(search_id)
 
+
+    # -----------------------------------------------------
+    # STUDENT FOUND
+    # -----------------------------------------------------
+
     if student is not None:
 
         st.success(
@@ -371,35 +387,42 @@ with tab1:
         )
 
         st.markdown(
-            '<div class="section-title">👤 Student Profile</div>',
+            '<div class="section-title">'
+            '👤 Student Profile'
+            '</div>',
             unsafe_allow_html=True
         )
 
+
         # -------------------------------------------------
-        # BASIC DETAILS
+        # STUDENT METRICS
         # -------------------------------------------------
 
         a1, a2, a3, a4 = st.columns(4)
 
         with a1:
+
             st.metric(
                 "Attendance",
                 f"{student['Attendance']:.1f}%"
             )
 
         with a2:
+
             st.metric(
                 "Study Hours",
                 f"{student['Study_Hours']:.1f} hrs"
             )
 
         with a3:
+
             st.metric(
                 "Assignment",
                 f"{student['Assignment_Score']:.1f}"
             )
 
         with a4:
+
             st.metric(
                 "Previous Semester",
                 f"{student['Previous_Semester_Score']:.1f}"
@@ -410,17 +433,22 @@ with tab1:
         # PREDICTION
         # -------------------------------------------------
 
-        input_data = pd.DataFrame([[
-            student["Attendance"],
-            student["Study_Hours"],
-            student["Assignment_Score"],
-            student["Mid1_Score"],
-            student["Mid2_Score"],
-            student["Previous_Semester_Score"],
-            student["Internal_Assessment"]
-        ]], columns=features)
+        input_data = pd.DataFrame(
+            [[
+                student["Attendance"],
+                student["Study_Hours"],
+                student["Assignment_Score"],
+                student["Mid1_Score"],
+                student["Mid2_Score"],
+                student["Previous_Semester_Score"],
+                student["Internal_Assessment"]
+            ]],
+            columns=features
+        )
 
-        predicted_score = model.predict(input_data)[0]
+        predicted_score = model.predict(
+            input_data
+        )[0]
 
         predicted_score = np.clip(
             predicted_score,
@@ -434,9 +462,12 @@ with tab1:
 
 
         st.markdown(
-            '<div class="section-title">🤖 Performance Prediction</div>',
+            '<div class="section-title">'
+            '🤖 Performance Prediction'
+            '</div>',
             unsafe_allow_html=True
         )
+
 
         r1, r2_col = st.columns([1, 2])
 
@@ -445,19 +476,24 @@ with tab1:
             st.markdown(
                 f"""
                 <div class="score-card">
+
                     <div class="small-label">
                         Predicted Final Score
                     </div>
+
                     <div class="score-number">
                         {predicted_score:.2f}
                     </div>
+
                     <div>
                         out of 100
                     </div>
+
                 </div>
                 """,
                 unsafe_allow_html=True
             )
+
 
         with r2_col:
 
@@ -465,21 +501,24 @@ with tab1:
 
                 st.success(
                     "🟢 HIGH PERFORMER\n\n"
-                    "The predicted performance is in the high-performance range."
+                    "The predicted performance is in the "
+                    "high-performance range."
                 )
 
             elif category == "Average Performer":
 
                 st.warning(
                     "🟡 AVERAGE PERFORMER\n\n"
-                    "The student may benefit from continued academic monitoring."
+                    "The student may benefit from continued "
+                    "academic monitoring."
                 )
 
             else:
 
                 st.error(
                     "🔴 NEEDS ATTENTION\n\n"
-                    "The student may require additional academic support."
+                    "The student may require additional "
+                    "academic support."
                 )
 
 
@@ -488,53 +527,69 @@ with tab1:
         # -------------------------------------------------
 
         st.markdown(
-            '<div class="section-title">🚦 Early-Warning Monitor</div>',
+            '<div class="section-title">'
+            '🚦 Early-Warning Monitor'
+            '</div>',
             unsafe_allow_html=True
         )
 
         risk_items = []
 
+
         if student["Attendance"] < 75:
+
             risk_items.append(
                 ("🔴", "Attendance", "Needs attention")
             )
+
         else:
+
             risk_items.append(
                 ("🟢", "Attendance", "Good")
             )
 
 
         if student["Study_Hours"] < 3:
+
             risk_items.append(
                 ("🟡", "Study Hours", "Monitor")
             )
+
         else:
+
             risk_items.append(
                 ("🟢", "Study Hours", "Good")
             )
 
 
         if student["Assignment_Score"] < 60:
+
             risk_items.append(
                 ("🔴", "Assignments", "Needs attention")
             )
+
         else:
+
             risk_items.append(
                 ("🟢", "Assignments", "Good")
             )
 
 
         if student["Mid2_Score"] < student["Mid1_Score"]:
+
             risk_items.append(
                 ("🟡", "Exam Trend", "Declining")
             )
+
         else:
+
             risk_items.append(
                 ("🟢", "Exam Trend", "Stable / Improving")
             )
 
 
         risk_cols = st.columns(4)
+
 
         for i, item in enumerate(risk_items):
 
@@ -545,8 +600,12 @@ with tab1:
                 st.markdown(
                     f"""
                     <div class="info-card">
-                        <b>{icon} {label}</b><br>
+
+                        <b>{icon} {label}</b>
+                        <br>
+
                         {status}
+
                     </div>
                     """,
                     unsafe_allow_html=True
@@ -554,31 +613,49 @@ with tab1:
 
 
         # -------------------------------------------------
-        # FACTORS
+        # KEY FACTORS
         # -------------------------------------------------
 
         st.markdown(
-            '<div class="section-title">🔎 Key Factors</div>',
+            '<div class="section-title">'
+            '🔎 Key Factors'
+            '</div>',
             unsafe_allow_html=True
         )
 
         factors = []
 
+
         if student["Attendance"] < 75:
-            factors.append("Low attendance")
+
+            factors.append(
+                "Low attendance"
+            )
+
 
         if student["Study_Hours"] < 3:
-            factors.append("Low study hours")
+
+            factors.append(
+                "Low study hours"
+            )
+
 
         if student["Assignment_Score"] < 60:
-            factors.append("Low assignment performance")
+
+            factors.append(
+                "Low assignment performance"
+            )
+
 
         if student["Mid2_Score"] < student["Mid1_Score"]:
+
             factors.append(
                 "Recent examination score declined"
             )
 
+
         if student["Previous_Semester_Score"] < 60:
+
             factors.append(
                 "Low previous semester performance"
             )
@@ -601,37 +678,49 @@ with tab1:
 
 
         # -------------------------------------------------
-        # SUPPORT
+        # ACADEMIC SUPPORT
         # -------------------------------------------------
 
         st.markdown(
-            '<div class="section-title">💡 Suggested Academic Support</div>',
+            '<div class="section-title">'
+            '💡 Suggested Academic Support'
+            '</div>',
             unsafe_allow_html=True
         )
 
         suggestions = []
 
+
         if student["Attendance"] < 75:
+
             suggestions.append(
                 "Monitor attendance regularly."
             )
 
+
         if student["Study_Hours"] < 3:
+
             suggestions.append(
                 "Encourage a consistent study schedule."
             )
 
+
         if student["Assignment_Score"] < 60:
+
             suggestions.append(
                 "Provide additional assignment support."
             )
 
+
         if student["Mid2_Score"] < student["Mid1_Score"]:
+
             suggestions.append(
                 "Review recent examination performance."
             )
 
+
         if student["Previous_Semester_Score"] < 60:
+
             suggestions.append(
                 "Provide additional academic mentoring."
             )
@@ -657,15 +746,16 @@ with tab1:
         if search_id:
 
             st.warning(
-                "Student not found. Please enter an ID such as S0001, S0500 or S1000."
+                "Student not found. Please enter an ID "
+                "such as S0001, S0500 or S1000."
             )
 
         else:
 
             st.info(
-                "👆 Enter a Student ID or click 🎬 Demo Student to begin."
+                "👆 Enter a Student ID or click "
+                "🎬 Demo Student to begin."
             )
-
 
 
 # =========================================================
@@ -675,17 +765,20 @@ with tab1:
 with tab2:
 
     st.markdown(
-        '<div class="section-title">📊 Academic Analytics Dashboard</div>',
+        '<div class="section-title">'
+        '📊 Academic Analytics Dashboard'
+        '</div>',
         unsafe_allow_html=True
     )
 
     st.write(
-        "Explore relationships between academic factors and final performance."
+        "Explore relationships between academic factors "
+        "and final performance."
     )
 
 
     # -----------------------------------------------------
-    # DISTRIBUTION
+    # PERFORMANCE DISTRIBUTION
     # -----------------------------------------------------
 
     st.subheader(
@@ -698,6 +791,7 @@ with tab2:
             "Average Performer",
             "Needs Attention"
         ],
+
         "Students": [
             high_count,
             average_count,
@@ -741,7 +835,7 @@ with tab2:
 
 
     # -----------------------------------------------------
-    # ASSIGNMENTS
+    # ASSIGNMENT
     # -----------------------------------------------------
 
     st.subheader(
@@ -785,22 +879,26 @@ with tab2:
 
 
 # =========================================================
-# TAB 3 — MODEL
+# TAB 3 — PREDICTION MODEL
 # =========================================================
 
 with tab3:
 
     st.markdown(
-        '<div class="section-title">🤖 Prediction Engine</div>',
+        '<div class="section-title">'
+        '🤖 Prediction Engine'
+        '</div>',
         unsafe_allow_html=True
     )
 
     st.write(
-        "The prototype uses Linear Regression to estimate expected final performance."
+        "The prototype uses Linear Regression to estimate "
+        "expected final performance."
     )
 
 
     m1, m2, m3 = st.columns(3)
+
 
     with m1:
 
@@ -813,6 +911,7 @@ with tab3:
             "Average absolute prediction error"
         )
 
+
     with m2:
 
         st.metric(
@@ -823,6 +922,7 @@ with tab3:
         st.caption(
             "Root mean squared prediction error"
         )
+
 
     with m3:
 
@@ -877,15 +977,21 @@ with tab3:
 with tab4:
 
     st.markdown(
-        '<div class="section-title">🏫 About the System</div>',
+        '<div class="section-title">'
+        '🏫 About the System'
+        '</div>',
         unsafe_allow_html=True
     )
 
     st.write(
-        "This project is designed as an academic analytics and "
-        "prediction layer that can complement an existing ERP."
+        "This project is designed as an academic analytics "
+        "and prediction layer that can complement an existing ERP."
     )
 
+
+    # -----------------------------------------------------
+    # WORKFLOW
+    # -----------------------------------------------------
 
     st.subheader(
         "🔄 System Workflow"
@@ -894,15 +1000,19 @@ with tab4:
     workflow_cols = st.columns(6)
 
     workflow = [
-        ("📥", "Academic\nData"),
+        ("📥", "Academic Data"),
         ("🧹", "Preprocessing"),
         ("📊", "Analytics"),
         ("🤖", "Prediction"),
-        ("🚦", "Early\nWarning"),
-        ("💡", "Academic\nSupport")
+        ("🚦", "Early Warning"),
+        ("💡", "Academic Support")
     ]
 
-    for col, item in zip(workflow_cols, workflow):
+
+    for col, item in zip(
+        workflow_cols,
+        workflow
+    ):
 
         with col:
 
@@ -910,20 +1020,31 @@ with tab4:
 
             st.markdown(
                 f"""
-                <div class="info-card" style="text-align:center">
-                    <div style="font-size:28px">{icon}</div>
+                <div class="info-card"
+                     style="text-align:center">
+
+                    <div style="font-size:28px">
+                        {icon}
+                    </div>
+
                     <b>{text}</b>
+
                 </div>
                 """,
                 unsafe_allow_html=True
             )
 
 
+    # -----------------------------------------------------
+    # ERP COMPARISON
+    # -----------------------------------------------------
+
     st.subheader(
         "🏫 Existing ERP vs Proposed Analytics Layer"
     )
 
     comparison = pd.DataFrame({
+
         "Existing ERP": [
             "Stores academic records",
             "Displays academic information",
@@ -944,18 +1065,30 @@ with tab4:
     )
 
 
+    # -----------------------------------------------------
+    # FUTURE SCOPE
+    # -----------------------------------------------------
+
     st.subheader(
         "🚀 Future Scope"
     )
 
     future_scope = [
+
         "Integration with authorized institutional ERP data",
+
         "More machine-learning algorithms",
+
         "Personalized academic interventions",
+
         "Longitudinal student performance tracking",
+
         "Explainable AI for predictions",
+
         "Privacy and role-based access controls"
+
     ]
+
 
     for item in future_scope:
 
@@ -966,9 +1099,10 @@ with tab4:
 
 
     st.info(
-        "Prototype note: The current system uses a synthetic academic "
-        "dataset for demonstration. A real deployment would require "
-        "authorized institutional data and appropriate privacy controls."
+        "Prototype note: The current system uses a synthetic "
+        "academic dataset for demonstration. A real deployment "
+        "would require authorized institutional data and "
+        "appropriate privacy controls."
     )
 
 
@@ -979,5 +1113,6 @@ with tab4:
 st.divider()
 
 st.caption(
-    "🎓 Smart Student Performance Analytics and Prediction System | PBL Prototype"
+    "🎓 Smart Student Performance Analytics and "
+    "Prediction System | PBL Prototype"
 )
