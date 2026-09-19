@@ -1,7 +1,7 @@
-
 import streamlit as st
 import pandas as pd
 import numpy as np
+import re
 
 from sklearn.model_selection import train_test_split
 from sklearn.linear_model import LinearRegression
@@ -65,6 +65,7 @@ r2 = r2_score(y_test, y_pred)
 # =========================================================
 
 st.title("🎓 Smart Student Performance Analytics")
+
 st.subheader("Performance Prediction and Early-Warning System")
 
 st.write(
@@ -84,7 +85,10 @@ st.divider()
 col1, col2, col3, col4 = st.columns(4)
 
 with col1:
-    st.metric("Students", len(df))
+    st.metric(
+        "Students",
+        len(df)
+    )
 
 with col2:
     st.metric(
@@ -115,6 +119,41 @@ tab1, tab2, tab3 = st.tabs(
 
 
 # =========================================================
+# STUDENT ID NORMALIZATION
+# =========================================================
+
+def normalize_student_id(value):
+    """
+    Makes Student IDs comparable even if the CSV stores
+    them as numbers or strings such as STU0001.
+    """
+
+    value = str(value).strip().upper()
+
+    # Remove spaces and special characters
+    cleaned = re.sub(r"[^A-Z0-9]", "", value)
+
+    # Handle IDs such as STU0001
+    if cleaned.startswith("STU"):
+        number_part = cleaned[3:]
+
+        if number_part.isdigit():
+            return str(int(number_part))
+
+    # Handle numeric IDs such as 1 or 0001
+    if cleaned.isdigit():
+        return str(int(cleaned))
+
+    return cleaned
+
+
+# Create a normalized ID column for searching
+df["_Normalized_ID"] = df["Student_ID"].apply(
+    normalize_student_id
+)
+
+
+# =========================================================
 # TAB 1 — STUDENT ANALYSIS
 # =========================================================
 
@@ -124,25 +163,59 @@ with tab1:
 
     search = st.text_input(
         "Search Student ID",
-        placeholder="Example: S0001"
+        placeholder="Example: STU0001"
     )
 
-    if search:
+    # -----------------------------------------------------
+    # FIND STUDENTS
+    # -----------------------------------------------------
 
+    if search.strip():
+
+        normalized_search = normalize_student_id(search)
+
+        # First try exact normalized match
         matching_students = df[
-            df["Student_ID"]
-            .astype(str)
-            .str.contains(search, case=False, na=False)
+            df["_Normalized_ID"] == normalized_search
         ]
+
+        # If exact match isn't found, allow partial search
+        if len(matching_students) == 0:
+
+            raw_search = str(search).strip().upper()
+
+            matching_students = df[
+                df["Student_ID"]
+                .astype(str)
+                .str.strip()
+                .str.upper()
+                .str.contains(
+                    raw_search,
+                    na=False,
+                    regex=False
+                )
+            ]
 
     else:
 
+        # Show first 20 students when no search is entered
         matching_students = df.head(20)
 
 
+    # -----------------------------------------------------
+    # NO STUDENT FOUND
+    # -----------------------------------------------------
+
     if len(matching_students) == 0:
 
-        st.warning("No student found. Try another Student ID.")
+        st.warning(
+            "No student found. Try another Student ID."
+        )
+
+
+    # -----------------------------------------------------
+    # STUDENT FOUND
+    # -----------------------------------------------------
 
     else:
 
@@ -152,58 +225,93 @@ with tab1:
         )
 
         student = df[
-            df["Student_ID"] == selected_student
+            df["Student_ID"].astype(str) ==
+            str(selected_student)
         ].iloc[0]
 
 
-        st.subheader(f"Student Profile — {selected_student}")
+        # -------------------------------------------------
+        # STUDENT PROFILE
+        # -------------------------------------------------
 
+        st.subheader(
+            f"Student Profile — {selected_student}"
+        )
 
         col1, col2, col3, col4 = st.columns(4)
 
         with col1:
+
             st.metric(
                 "Attendance",
                 f"{student['Attendance']:.0f}%"
             )
 
         with col2:
+
             st.metric(
                 "Study Hours",
                 f"{student['Study_Hours']:.1f}"
             )
 
         with col3:
+
             st.metric(
                 "Mid-1",
                 f"{student['Mid1_Score']:.1f}"
             )
 
         with col4:
+
             st.metric(
                 "Mid-2",
                 f"{student['Mid2_Score']:.1f}"
             )
 
 
-        # Prepare prediction input
+        # -------------------------------------------------
+        # PREPARE PREDICTION INPUT
+        # -------------------------------------------------
 
         input_data = pd.DataFrame({
-            "Attendance": [student["Attendance"]],
-            "Study_Hours": [student["Study_Hours"]],
-            "Assignment_Score": [student["Assignment_Score"]],
-            "Mid1_Score": [student["Mid1_Score"]],
-            "Mid2_Score": [student["Mid2_Score"]],
+
+            "Attendance": [
+                student["Attendance"]
+            ],
+
+            "Study_Hours": [
+                student["Study_Hours"]
+            ],
+
+            "Assignment_Score": [
+                student["Assignment_Score"]
+            ],
+
+            "Mid1_Score": [
+                student["Mid1_Score"]
+            ],
+
+            "Mid2_Score": [
+                student["Mid2_Score"]
+            ],
+
             "Previous_Semester_Score": [
                 student["Previous_Semester_Score"]
             ],
+
             "Internal_Assessment": [
                 student["Internal_Assessment"]
             ]
         })
 
 
-        predicted_score = model.predict(input_data)[0]
+        # -------------------------------------------------
+        # PREDICTION
+        # -------------------------------------------------
+
+        predicted_score = model.predict(
+            input_data
+        )[0]
 
         predicted_score = np.clip(
             predicted_score,
@@ -212,7 +320,9 @@ with tab1:
         )
 
 
-        # Performance category
+        # -------------------------------------------------
+        # PERFORMANCE CATEGORY
+        # -------------------------------------------------
 
         if predicted_score >= 75:
 
@@ -229,7 +339,10 @@ with tab1:
 
         st.divider()
 
-        st.subheader("🤖 Prediction Result")
+        st.subheader(
+            "🤖 Prediction Result"
+        )
+
 
         col1, col2 = st.columns(2)
 
@@ -239,6 +352,7 @@ with tab1:
                 "Predicted Final Score",
                 f"{predicted_score:.2f}"
             )
+
 
         with col2:
 
@@ -261,29 +375,47 @@ with tab1:
                 )
 
 
-        # Risk factors
+        # -------------------------------------------------
+        # RISK FACTORS
+        # -------------------------------------------------
 
-        st.subheader("🔎 Key Factors")
+        st.subheader(
+            "🔎 Key Factors"
+        )
 
         factors = []
 
+
         if student["Attendance"] < 75:
-            factors.append("Low attendance")
+
+            factors.append(
+                "Low attendance"
+            )
+
 
         if student["Study_Hours"] < 3:
-            factors.append("Low study hours")
+
+            factors.append(
+                "Low study hours"
+            )
+
 
         if student["Assignment_Score"] < 60:
+
             factors.append(
                 "Low assignment performance"
             )
 
+
         if student["Mid2_Score"] < student["Mid1_Score"]:
+
             factors.append(
                 "Recent examination score has declined"
             )
 
+
         if student["Previous_Semester_Score"] < 60:
+
             factors.append(
                 "Low previous semester performance"
             )
@@ -305,7 +437,9 @@ with tab1:
             )
 
 
-        # Suggestions
+        # -------------------------------------------------
+        # ACADEMIC SUPPORT SUGGESTIONS
+        # -------------------------------------------------
 
         st.subheader(
             "💡 Suggested Academic Support"
@@ -313,11 +447,13 @@ with tab1:
 
         suggestions = []
 
+
         if student["Attendance"] < 75:
 
             suggestions.append(
                 "Monitor attendance regularly"
             )
+
 
         if student["Study_Hours"] < 3:
 
@@ -325,17 +461,20 @@ with tab1:
                 "Encourage a consistent study schedule"
             )
 
+
         if student["Assignment_Score"] < 60:
 
             suggestions.append(
                 "Provide additional assignment support"
             )
 
+
         if student["Mid2_Score"] < student["Mid1_Score"]:
 
             suggestions.append(
                 "Review recent examination performance"
             )
+
 
         if not suggestions:
 
@@ -358,7 +497,10 @@ with tab1:
 
 with tab2:
 
-    st.header("📊 Academic Analytics")
+    st.header(
+        "📊 Academic Analytics"
+    )
+
 
     st.subheader(
         "Study Hours vs Final Score"
@@ -399,13 +541,17 @@ with tab2:
 
 with tab3:
 
-    st.header("🤖 Machine Learning Model")
+    st.header(
+        "🤖 Machine Learning Model"
+    )
 
     st.write(
         "Algorithm used: Linear Regression"
     )
 
+
     col1, col2, col3 = st.columns(3)
+
 
     with col1:
 
@@ -414,12 +560,14 @@ with tab3:
             f"{mae:.2f}"
         )
 
+
     with col2:
 
         st.metric(
             "RMSE",
             f"{rmse:.2f}"
         )
+
 
     with col3:
 
@@ -429,7 +577,9 @@ with tab3:
         )
 
 
-    st.subheader("Features Used")
+    st.subheader(
+        "Features Used"
+    )
 
     st.write(
         ", ".join(features)
@@ -440,10 +590,15 @@ with tab3:
         "Actual vs Predicted Scores"
     )
 
+
     prediction_data = pd.DataFrame({
+
         "Actual": y_test.values,
+
         "Predicted": y_pred
+
     })
+
 
     st.scatter_chart(
         prediction_data,
@@ -458,13 +613,32 @@ with tab3:
 
 st.divider()
 
+
 st.caption(
     "Smart Student Performance Analytics and Prediction System | "
     "PBL Prototype"
 )
+
 
 st.caption(
     "Prototype evaluated using a synthetic academic dataset. "
     "Real deployment would require authorized institutional data "
     "and appropriate privacy controls."
 )
+
+
+   
+
+
+   
+        
+
+
+       
+           
+
+           
+                
+                
+
+    
