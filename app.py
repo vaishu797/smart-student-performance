@@ -191,17 +191,12 @@ with st.sidebar:
 
     st.markdown("### 🧭 Project Pipeline")
 
-    st.write("📥 Academic Data")
-    st.write("↓")
-    st.write("🧹 Preprocessing")
-    st.write("↓")
-    st.write("📊 Analytics")
-    st.write("↓")
-    st.write("🤖 Prediction")
-    st.write("↓")
-    st.write("🚦 Early Warning")
-    st.write("↓")
-    st.write("💡 Academic Support")
+   st.write("📥 Academic Data")
+st.write("🧹 Preprocessing")
+st.write("📊 Analytics")
+st.write("🤖 Prediction")
+st.write("🚦 Early Warning")
+st.write("💡 Academic Support")
 
     st.divider()
 
